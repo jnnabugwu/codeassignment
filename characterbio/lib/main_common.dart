@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: ref.appTitle,
       theme: ref.theme,
-      home: MyHomePage(title: ref.appTitle),
+      home: Display(api: ref.apiEndpoint),
     );
   }
 }

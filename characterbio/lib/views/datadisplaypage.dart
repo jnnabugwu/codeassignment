@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:characterbio/data/characters_repository.dart';
 import 'package:characterbio/models/relatedtopics.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -33,12 +34,12 @@ List<RelatedTopics> parseCharacters(dynamic responseBody) {
 }
 
 class Display extends StatelessWidget {
-  const Display({super.key});
-
+  const Display({super.key, required this.api});
+  final String api;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: fetchCharacters(http.Client()),
+        future: CharacterRepository(api: api, client: http.Client()).getData(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
@@ -65,8 +66,10 @@ class CharacterList extends StatelessWidget {
     return ListView.builder(
         itemCount: relatedtopics.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(relatedtopics[index].toString()),
+          return Material(
+            child: ListTile(
+              title: Text(relatedtopics[index].text.toString()),
+            ),
           );
         });
   }

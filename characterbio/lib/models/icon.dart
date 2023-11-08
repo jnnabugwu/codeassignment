@@ -10,4 +10,8 @@ class Icon {
     final url = json['URL'] as String;
     return Icon(url: url);
   }
+
+  String get getUrl {
+    return url;
+  }
 }

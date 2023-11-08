@@ -1,58 +1,57 @@
-import 'dart:convert';
-
+import 'package:characterbio/controllers/search_controller.dart';
 import 'package:characterbio/data/characters_repository.dart';
 import 'package:characterbio/models/relatedtopics.dart';
+import 'package:characterbio/views/detailpage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-///
-//call the api, get the response, decode the response
-Future<dynamic> fecthdata() async {
-  final response = await http.get(Uri.parse(
-      'http://api.duckduckgo.com/?q=simpsons+characters&format=json'));
+final searchCharacterProvider = StateProvider<String>((ref) => '');
+final textEditingContoller = TextEditingController();
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    final relatedTopicsList = data['RelatedTopics'];
-    return relatedTopicsList;
-  }
-}
-
-//creates an isolate to take characters
-Future<List<RelatedTopics>> fetchCharacters(http.Client client) async {
-  final response = await fecthdata();
-
-  return parseCharacters(response);
-}
-
-List<RelatedTopics> parseCharacters(dynamic responseBody) {
-  final parsed = (responseBody).cast<Map<String, dynamic>>();
-
-  return parsed
-      .map<RelatedTopics>((json) => RelatedTopics.fromJson(json))
-      .toList();
-}
-
-class Display extends StatelessWidget {
+///have the text editting controller update
+///the search pass the search through to the
+class Display extends ConsumerWidget {
   const Display({super.key, required this.api});
   final String api;
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: CharacterRepository(api: api, client: http.Client()).getData(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('An error has occured!'),
-            );
-          } else if (snapshot.hasData) {
-            return Center(child: CharacterList(relatedtopics: snapshot.data!));
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SafeArea(
+      child: Column(
+        children: [
+          Material(
+              child: TextFormField(
+            controller: textEditingContoller,
+            validator: (val) {
+              if (val == null || val.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          )),
+          FutureBuilder(
+              future: CharacterRepository(api: api, client: http.Client())
+                  .getData(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('An error has occured!'),
+                  );
+                } else if (snapshot.hasData) {
+                  //if query is emtpy return snapshot
+                  //else return
+                  return SizedBox(
+                      height: MediaQuery.of(context).size.height * .75,
+                      child: CharacterList(relatedtopics: snapshot.data!));
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              }),
+        ],
+      ),
+    );
   }
 }
 
@@ -63,12 +62,36 @@ class CharacterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> relatedTopicsNames = [];
+    List<String> relatedtopicsDescriptions = [];
+    List<String> relatedtopicsSearchables = [];
+
+    for (var i = 0; i < relatedtopics.length; i++) {
+      //Split then take the first element
+      relatedtopicsSearchables.add(relatedtopics[i].text);
+      relatedTopicsNames.add(relatedtopics[i].text.split("-").first);
+      relatedtopicsDescriptions.add(relatedtopics[i].text.split("-").last);
+    }
+
+    final result = relatedtopics
+        .where((element) => element.text.toString().toLowerCase().contains(''))
+        .toList();
+
     return ListView.builder(
-        itemCount: relatedtopics.length,
+        shrinkWrap: true,
+        itemCount: result.length,
         itemBuilder: (context, index) {
+          // List<String> info = relatedtopics[index].text.split('-');
+          // final description = info[1];
+
           return Material(
             child: ListTile(
-              title: Text(relatedtopics[index].text.toString()),
+              title: Text(result[index].text.toString()),
+              onTap: () {
+                // //Create Screen
+                Navigator.pushNamed(context, DetailPage.routeName,
+                    arguments: result[index]);
+              },
             ),
           );
         });

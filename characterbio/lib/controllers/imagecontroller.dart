@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 //TODO: if icon url is "" string then return Image.asset() else Image.network

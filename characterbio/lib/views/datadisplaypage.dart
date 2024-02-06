@@ -1,80 +1,106 @@
-import 'package:characterbio/controllers/search_controller.dart';
-import 'package:characterbio/data/characters_repository.dart';
+import 'package:characterbio/data/simple_character_repo.dart';
 import 'package:characterbio/models/relatedtopics.dart';
 import 'package:characterbio/views/detailpage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-final searchCharacterProvider = StateProvider<String>((ref) => '');
-final textEditingContoller = TextEditingController();
+final TextEditingController _searchController = TextEditingController();
+String query = '';
 
 ///have the text editting controller update
 ///the search pass the search through to the
-class Display extends ConsumerWidget {
+class Display extends StatefulWidget {
   const Display({super.key, required this.api});
+
   final String api;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-      child: Column(
-        children: [
-          Material(
-              child: TextFormField(
-            controller: textEditingContoller,
-            validator: (val) {
-              if (val == null || val.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
+  State<Display> createState() => _DisplayState();
+}
+
+class _DisplayState extends State<Display> {
+  // repo = CharacterRepository(api: widget.api, client: http.Client());
+  // jsonData = await repo.getData();
+  // _list = repo.parseData(jsonData);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purple.shade300],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           )),
-          FutureBuilder(
-              future: CharacterRepository(api: api, client: http.Client())
-                  .getData(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(
-                    child: Text('An error has occured!'),
-                  );
-                } else if (snapshot.hasData) {
-                  //if query is emtpy return snapshot
-                  //else return
-                  return SizedBox(
-                      height: MediaQuery.of(context).size.height * .75,
-                      child: CharacterList(relatedtopics: snapshot.data!));
-                } else {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              }),
-        ],
+        ),
+        title: TextField(
+          onChanged: (value) {
+            setState(() => query = value);
+          },
+          controller: _searchController,
+          style: const TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
+          decoration: const InputDecoration(
+              hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.white54),
+              border: InputBorder.none),
+        ),
       ),
+      body: FutureBuilder(
+          future:
+              SimpleCharacterRepository(api: widget.api, client: http.Client())
+                  .getData(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Center(
+                child: Text('An error has occured!'),
+              );
+            } else if (snapshot.hasData) {
+              //if query is emtpy return snapshot
+              //else return
+              return SizedBox(
+                  height: MediaQuery.of(context).size.height * .75,
+                  child: CharacterList(
+                    relatedTopics: snapshot.data!,
+                  ));
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          }),
     );
   }
 }
 
 class CharacterList extends StatelessWidget {
-  const CharacterList({super.key, required this.relatedtopics});
+  const CharacterList({super.key, required this.relatedTopics});
 
-  final List<RelatedTopics> relatedtopics;
+  final List<RelatedTopics> relatedTopics;
 
   @override
   Widget build(BuildContext context) {
     List<String> relatedTopicsNames = [];
-    List<String> relatedtopicsDescriptions = [];
-    List<String> relatedtopicsSearchables = [];
+    List<String> relatedTopicsDescriptions = [];
+    List<String> relatedTopicsSearchables = [];
 
-    for (var i = 0; i < relatedtopics.length; i++) {
+    for (var i = 0; i < relatedTopics.length; i++) {
       //Split then take the first element
-      relatedtopicsSearchables.add(relatedtopics[i].text);
-      relatedTopicsNames.add(relatedtopics[i].text.split("-").first);
-      relatedtopicsDescriptions.add(relatedtopics[i].text.split("-").last);
+      relatedTopicsSearchables.add(relatedTopics[i].text);
+      relatedTopicsNames.add(relatedTopics[i].text.split("-").first);
+      relatedTopicsDescriptions.add(relatedTopics[i].text.split("-").last);
     }
 
-    final result = relatedtopics
-        .where((element) => element.text.toString().toLowerCase().contains(''))
+    final result = relatedTopics
+        .where(
+            (element) => element.text.toString().toLowerCase().contains(query))
         .toList();
 
     return ListView.builder(
@@ -86,7 +112,7 @@ class CharacterList extends StatelessWidget {
 
           return Material(
             child: ListTile(
-              title: Text(result[index].text.toString()),
+              title: Text('${result[index].text} + $index'),
               onTap: () {
                 // //Create Screen
                 Navigator.pushNamed(context, DetailPage.routeName,

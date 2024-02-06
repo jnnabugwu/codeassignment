@@ -12,13 +12,15 @@ class DetailPage extends StatelessWidget {
     final name = character.text.split('-').first;
     final description = character.text.split('-').last;
 
-    return Material(
-      child: Column(
-        children: [
-          // ImagePicker(iconUrl: character.getIcon),
-          Text(name),
-          Text(description),
-        ],
+    return SafeArea(
+      child: Material(
+        child: Column(
+          children: [
+            // ImagePicker(iconUrl: character.getIcon),
+            Text(name),
+            Text(description),
+          ],
+        ),
       ),
     );
   }

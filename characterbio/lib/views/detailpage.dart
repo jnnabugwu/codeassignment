@@ -11,12 +11,12 @@ class DetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = character.text.split('-').first;
     final description = character.text.split('-').last;
-
+    print(character.getIcon.toString());
     return SafeArea(
       child: Material(
         child: Column(
           children: [
-            // ImagePicker(iconUrl: character.getIcon),
+            ImagePicker(iconUrl: character.getIcon),
             Text(name),
             Text(description),
           ],

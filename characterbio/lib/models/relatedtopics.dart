@@ -14,7 +14,8 @@ class RelatedTopics {
   }
   @override
   String toString() {
-    return 'RelatedTopics(firstURL: $firstURL,text: $text,result:$result, icon:$icon)';
+    return 'RelatedTopics(firstURL: $firstURL,text: $text,result:$result'
+        ', icon:$icon)';
   }
 
   String get getIcon {

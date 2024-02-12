@@ -7,8 +7,6 @@ import 'package:http/http.dart' as http;
 final TextEditingController _searchController = TextEditingController();
 String query = '';
 
-///have the text editting controller update
-///the search pass the search through to the
 class Display extends StatefulWidget {
   const Display({super.key, required this.api});
 
@@ -19,10 +17,6 @@ class Display extends StatefulWidget {
 }
 
 class _DisplayState extends State<Display> {
-  // repo = CharacterRepository(api: widget.api, client: http.Client());
-  // jsonData = await repo.getData();
-  // _list = repo.parseData(jsonData);
-
   @override
   void initState() {
     super.initState();
@@ -87,16 +81,7 @@ class CharacterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<String> relatedTopicsNames = [];
-    List<String> relatedTopicsDescriptions = [];
-    List<String> relatedTopicsSearchables = [];
-
-    for (var i = 0; i < relatedTopics.length; i++) {
-      //Split then take the first element
-      relatedTopicsSearchables.add(relatedTopics[i].text);
-      relatedTopicsNames.add(relatedTopics[i].text.split("-").first);
-      relatedTopicsDescriptions.add(relatedTopics[i].text.split("-").last);
-    }
+    final screenWidth = MediaQuery.of(context).size.width;
 
     final result = relatedTopics
         .where(
@@ -107,18 +92,24 @@ class CharacterList extends StatelessWidget {
         shrinkWrap: true,
         itemCount: result.length,
         itemBuilder: (context, index) {
-          // List<String> info = relatedtopics[index].text.split('-');
-          // final description = info[1];
-
-          return Material(
-            child: ListTile(
-              title: Text('${result[index].text} + $index'),
-              onTap: () {
-                // //Create Screen
-                Navigator.pushNamed(context, DetailPage.routeName,
-                    arguments: result[index]);
-              },
-            ),
+          return Card(
+            child: screenWidth >= 700
+                ? ListTile(
+                    title: Text(result[index].text),
+                    onTap: () {
+                      // //Create Screen
+                      Navigator.pushNamed(context, DetailPage.routeName,
+                          arguments: result[index]);
+                    },
+                  )
+                : ListTile(
+                    title: Text(result[index].text.split('-').first),
+                    onTap: () {
+                      // //Create Screen
+                      Navigator.pushNamed(context, DetailPage.routeName,
+                          arguments: result[index]);
+                    },
+                  ),
           );
         });
   }
